@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     // GUI Components
     private TextView mBluetoothStatus;
     private TextView mReadBuffer;
+    //private EditText mReadBufferMultiLine;
     private Button mScanBtn;
     private Button mOffBtn;
     private Button mListPairedDevicesBtn;
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         mBluetoothStatus = (TextView)findViewById(R.id.bluetoothStatus);
         mReadBuffer = (TextView) findViewById(R.id.readBuffer);
+        //mReadBufferMultiLine = (EditText) findViewById(R.id.readBufferMultiLine);
         mScanBtn = (Button)findViewById(R.id.scan);
         mOffBtn = (Button)findViewById(R.id.off);
         mDiscoverBtn = (Button)findViewById(R.id.discover);
@@ -82,12 +85,25 @@ public class MainActivity extends AppCompatActivity {
             public void handleMessage(android.os.Message msg){
                 if(msg.what == MESSAGE_READ){
                     String readMessage = null;
+                    Double weight = 0.00;
                     try {
                         readMessage = new String((byte[]) msg.obj, "UTF-8");
+                        // Removing date and time from readMessage
+                        String trimmedReadMessage = readMessage.substring(22,readMessage.lastIndexOf("\n"));
+
+                        // Removing pre/trailing spaces (This will show "32.11 kg")
+                        trimmedReadMessage = trimmedReadMessage.trim();
+                        //System.out.println(trimmedReadMessage);
+
+                        // Removing weight text (kg or lbs) (This will return "32.11" as Double)
+                        weight = Double.valueOf(trimmedReadMessage.substring(0,trimmedReadMessage.lastIndexOf(" ")));
+                        //System.out.println(weight.toString());
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-                    mReadBuffer.setText(readMessage);
+                    mReadBuffer.setText(weight.toString() + " kgs");
+                    //mReadBufferMultiLine.setText(readMessage);
+                    Toast.makeText(getApplicationContext(),readMessage,Toast.LENGTH_LONG).show();
                 }
 
                 if(msg.what == CONNECTING_STATUS){
